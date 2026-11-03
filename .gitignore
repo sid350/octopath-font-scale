@@ -1,0 +1,3 @@
+*.pak
+*.ufont
+__pycache__/
