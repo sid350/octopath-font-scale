@@ -41,21 +41,3 @@ To undo the change, delete `Kingship-Switch_9_P.pak`.
 On Android, with nx2android on a Red Magic Astra, the scale was 1.5. These screens were checked: the title, the traveler selection, Cyrus's opening and its dialogue boxes.
 
 Long lines in places not looked at yet may not fit their boxes.
-
----
-
-# OCTOPATH TRAVELER: крупный текст
-
-Скрипт собирает из файлов вашей копии игры патч-пак, с которым текст становится в 1.5 раза крупнее. Окна, рамки и межстрочный интервал остаются как в оригинале. Самих файлов игры в репозитории нет.
-
-```
-python octopath_font_scale.py <RomFS>/Kingship/Content/Paks
-```
-
-Получится файл `Kingship-Switch_9_P.pak`. Куда его положить:
-
-- **Android (nx2android):** в `files/RomFS/Kingship/Content/Paks/` в данных установленной игры.
-- **Mac или iPhone (nxnative):** в распакованный RomFS перед сборкой приложения. Этот вариант ещё не проверялся.
-- **Switch:** в `atmosphere/contents/010057D006492000/romfs/Kingship/Content/Paks/`.
-
-Чтобы вернуть обычный размер, удалите этот пак.
