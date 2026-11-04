@@ -46,9 +46,9 @@ Long lines in places not looked at yet may not fit their boxes.
 
 `octopath_dialogue_text.py` builds a different pak: it makes only the text in the speech balloons larger and leaves the menus, tutorials, battle text and narration as the game has them.
 
-**Not tested in the game yet.** The game may set these sizes itself, and three lines may not fit a balloon.
+**Not tested in the game with this line spacing yet.**
 
-Dialogue and tutorials share one font, so font files cannot separate them. This script leaves the fonts alone and raises the font `Size` in the balloon widgets (`Kingship/Content/UI/Balloon/BP`): the text from 21 to 32 and the speaker's name from 18 to 27 at the default scale. Line spacing grows with the text, unlike in the full pak.
+Dialogue and tutorials share one font, so font files cannot separate them. This script leaves the fonts alone and raises the font `Size` in the balloon widgets (`Kingship/Content/UI/Balloon/BP`): the text from 21 to 32 and the speaker's name from 18 to 27 at the default scale. A line's height grows with the font, so the text's `LineHeightPercentage` is scaled back (1.4 to 0.919) and the lines keep their spacing, as in the full pak.
 
 ```
 python octopath_dialogue_text.py <RomFS>/Kingship/Content/Paks

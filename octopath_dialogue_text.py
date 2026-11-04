@@ -3,6 +3,7 @@
 #
 # Dialogue, tutorials and most menus share one font (FONT_KS_NewCinema), so changing the font files, as octopath_font_scale.py does, changes them all.
 # This script leaves the fonts alone and changes the Size of the font in the balloon widgets: the text (21) and the speaker's name (18).
+# A line's height grows with the font, so LineHeightPercentage of the text is scaled back and its lines keep their spacing, as in the other script.
 # Do not use it together with octopath_font_scale.py's pak: the two scales would multiply.
 #
 # Usage: octopath_dialogue_text.py <folder with the game's paks> [-s 1.5] [-o Kingship-Switch_8_P.pak]
@@ -12,7 +13,8 @@ import argparse, os, re, struct, sys
 import octopath_font_scale as pak
 
 WIDGETS = ['Kingship/Content/UI/Balloon/BP/' + n for n in ('TalkText_Balloon', 'TalkText_DeepThink', 'Balloon_00', 'Balloon_01', 'BalloonManagerBP')]
-SIZES = (21, 18)   # the text and the speaker's name
+TEXT_SIZE, NAME_SIZE = 21, 18
+SIZES = (TEXT_SIZE, NAME_SIZE)
 
 
 def names(asset):
@@ -29,15 +31,25 @@ def names(asset):
 
 
 def scale_sizes(asset, export, scale, label):
-    """The widget's serialized data with each font Size property scaled"""
+    """The widget's serialized data with each font Size scaled, and the line height of the text scaled back so its lines keep their spacing"""
     t = {n: i for i, n in enumerate(names(asset))}
-    tag = struct.pack('<iiiiiib', t['Size'], 0, t['IntProperty'], 0, 4, 0, 0)
+    size_tag = struct.pack('<iiiiiib', t['Size'], 0, t['IntProperty'], 0, 4, 0, 0)
+    line_tag = struct.pack('<iiiiiib', t['LineHeightPercentage'], 0, t['FloatProperty'], 0, 4, 0, 0)
     d = bytearray(export); found = []
-    for m in re.finditer(re.escape(tag), export):
-        v = struct.unpack_from('<i', d, m.end())[0]
+    sizes = [m.end() for m in re.finditer(re.escape(size_tag), export)]
+    lines = [m.end() for m in re.finditer(re.escape(line_tag), export)]
+    if not sizes: sys.exit(f'{label}: no font size found')
+    for k, at in enumerate(sizes):
+        v = struct.unpack_from('<i', d, at)[0]
         if v not in SIZES: sys.exit(f'{label}: a Size of {v}, not one of {SIZES}: another game version?')
-        new = round(v * scale + 0.001); struct.pack_into('<i', d, m.end(), new); found.append(new)
-    if not found: sys.exit(f'{label}: no font size found')
+        new = round(v * scale + 0.001); struct.pack_into('<i', d, at, new)
+        end = sizes[k + 1] if k + 1 < len(sizes) else len(d)
+        line = next((x for x in lines if at < x < end), None)
+        old = struct.unpack_from('<f', d, line)[0] if line else None
+        if v == TEXT_SIZE:
+            if line is None: sys.exit(f'{label}: a text block without a line height')
+            struct.pack_into('<f', d, line, old * v / new)   # the height follows the real sizes, 21 to 32 is not exactly the scale
+        found.append((v, new, None if old is None else round(old, 3), round(struct.unpack_from('<f', d, line)[0], 3) if line else None))
     return bytes(d), found
 
 
@@ -60,7 +72,7 @@ def main():
     for w in WIDGETS:
         d, found = scale_sizes(files[w + '.uasset'], files[w + '.uexp'], a.scale, w)
         out += [(w + '.uasset', files[w + '.uasset']), (w + '.uexp', d)]
-        print(f'{w.rsplit("/", 1)[1]}: font sizes {found}')
+        print(f'{w.rsplit("/", 1)[1]}: (size, new, line height, new) {found}')
     path = a.out or os.path.join(a.paks, 'Kingship-Switch_8_P.pak')
     pak.write_pak(path, out)
     print(f'{path}: {os.path.getsize(path):,} bytes')
