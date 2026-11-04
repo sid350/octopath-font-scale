@@ -41,3 +41,18 @@ To undo the change, delete `Kingship-Switch_9_P.pak`.
 On Android, with nx2android on a Red Magic Astra, the scale was 1.5. These screens were checked: the title, the traveler selection, Cyrus's opening and its dialogue boxes.
 
 Long lines in places not looked at yet may not fit their boxes.
+
+## Larger dialogue text only
+
+`octopath_dialogue_text.py` builds a different pak: it makes only the text in the speech balloons larger and leaves the menus, tutorials, battle text and narration as the game has them.
+
+**Not tested in the game yet.** The game may set these sizes itself, and three lines may not fit a balloon.
+
+Dialogue and tutorials share one font, so font files cannot separate them. This script leaves the fonts alone and raises the font `Size` in the balloon widgets (`Kingship/Content/UI/Balloon/BP`): the text from 21 to 32 and the speaker's name from 18 to 27 at the default scale. Line spacing grows with the text, unlike in the full pak.
+
+```
+python octopath_dialogue_text.py <RomFS>/Kingship/Content/Paks
+python octopath_dialogue_text.py <RomFS>/Kingship/Content/Paks -s 1.3 -o Kingship-Switch_8_P.pak
+```
+
+It writes `Kingship-Switch_8_P.pak`, which goes where the other pak goes. Use one of the two, not both: the scales would multiply. It needs `octopath_font_scale.py` beside it.
